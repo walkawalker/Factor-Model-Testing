@@ -1,0 +1,97 @@
+---
+title: "testingfactormodels"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(tidyquant)
+library(GRS.test)
+library(openxlsx)
+```
+
+```{r cars}
+ff <- read.csv("C:\\Users\\whill\\Downloads\\F-F_Research_Data_5_Factors_2x3.csv", header = TRUE,skip = 3, nrows = 700)%>%
+  rename(DATE = X)%>%
+  select(-RF)
+mom <-read.csv("C:\\Users\\whill\\Downloads\\F-F_Momentum_Factor.csv", header = TRUE,skip = 13, nrows = 1138)%>%
+  rename(DATE = X)%>%
+  select(DATE, Mom)
+  
+devil <- read.xlsx("C:\\Users\\whill\\Downloads\\The Devil in HMLs Details Factors Monthly.xlsx", sheet = 'HML Devil',startRow = 18, colNames = FALSE)%>%
+rename(DATE = X1, USA = X25)%>%
+  mutate(DATE = as.Date(DATE,origin = "1899-12-30"))%>%
+ select(DATE, USA)
+ip <- read.csv("C:\\Users\\whill\\Downloads\\10_Industry_Portfolios.csv", header = TRUE,skip = 11, nrows = 1144)%>%
+  rename(DATE = X)
+p25ff <- read.csv("C:\\Users\\whill\\Downloads\\25_Portfolios_5x5.csv", header = TRUE,skip = 15, nrows = 1144)%>%
+  rename(DATE = X)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+devil <- devil%>%
+  filter(DATE >= as.Date("1963-07-01"))
+mom <- mom%>%
+  filter(DATE >= 196307)
+ip <- ip%>%
+  filter(DATE >= 196307)
+p25ff <- p25ff%>%
+  filter(DATE >= 196307)
+```
+```{r clean}
+ff <- ff%>%
+  select(-DATE)
+mom <- mom%>%
+  select(-DATE)
+ffplusmom <- cbind(ff,mom)
+
+```
+```{r clean}
+devil <- devil%>%
+  select(-DATE)
+ip <- ip%>%
+  select(-DATE)
+p25ff <- p25ff%>%
+  select(-DATE)
+```
+```{r clean}
+aqr6 <- cbind(ffplusmom,devil)
+
+
+```
+```{r clean}
+
+res25ff1 <- GRS.test(p25ff,ffplusmom)
+res25ff2 <- GRS.test(p25ff,aqr6)
+res10ip1 <- GRS.test(ip,ffplusmom)
+res10ip2 <- GRS.test(ip,aqr6)
+```
+```{r get pval}
+print("The pvalues of the GRS Test between the 25 Portfolios and the 5 Factor Model is")
+print(res25ff1$GRS.pval)
+
+print("Each Individual P-Val")
+print(res25ff1$pval)
+
+print("The pvalues of the GRS Test between the 25 Portfolios and the AQR Six Factor is")
+print(res25ff2$GRS.pval)
+
+print("Each Individual P-Val")
+print(res25ff2$pval)
+
+print("The pvalues of the GRS Test between the 10 Industry and the 5 Factor Model is")
+print(res10ip1$GRS.pval)
+
+print("Each Individual P-Val")
+print(res10ip1$pval)
+
+print("The pvalues of the GRS Test between the 10 Industry and the AQR Six Factor is")
+print(res10ip2$GRS.pval)
+
+print("Each Individual P-Val")
+print(res10ip2$pval)
+```
